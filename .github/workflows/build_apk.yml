@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:    # 你也可以手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,13 +18,20 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Generate platform directories
+        run: |
+          cd flutter_app
+          flutter create --project-name hermes_project_app --platforms android .
+
       - name: Install dependencies
-        working-directory: ./flutter_app
-        run: flutter pub get
+        run: |
+          cd flutter_app
+          flutter pub get
 
       - name: Build APK
-        working-directory: ./flutter_app
-        run: flutter build apk --release
+        run: |
+          cd flutter_app
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
