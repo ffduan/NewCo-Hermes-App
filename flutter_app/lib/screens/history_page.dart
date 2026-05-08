@@ -190,13 +190,4 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
     );
   }
-
-  String _formatDate(String iso) {
-    try {
-      final dt = DateTime.parse(iso);
-      return DateFormat('M/d HH:mm').format(dt);
-    } catch (_) {
-      return iso;
-    }
-  }
 }
