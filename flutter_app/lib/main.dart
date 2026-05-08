@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/dashboard_page.dart';
 import 'screens/report_page.dart';
 import 'screens/history_page.dart';
@@ -8,55 +6,9 @@ import 'screens/settings_page.dart';
 import 'services/api_service.dart';
 import 'theme/app_theme.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 初始化本地通知
-  const AndroidInitializationSettings androidSettings =
-      AndroidInitializationSettings('@mipmap/ic_launcher');
-  const DarwinInitializationSettings iosSettings =
-      DarwinInitializationSettings();
-  const InitializationSettings initSettings = InitializationSettings(
-    android: androidSettings,
-    iOS: iosSettings,
-  );
-  await flutterLocalNotificationsPlugin.initialize(initSettings);
-
-  // 设置每日9:00提醒
-  await _scheduleDailyReminder();
-
   runApp(const HermesApp());
-}
-
-Future<void> _scheduleDailyReminder() async {
-  final prefs = await SharedPreferences.getInstance();
-  final hour = prefs.getInt('reminder_hour') ?? 9;
-  final minute = prefs.getInt('reminder_minute') ?? 0;
-
-  // 安卓定时通知
-  const AndroidNotificationDetails androidDetails =
-      AndroidNotificationDetails(
-    'daily_reminder',
-    '每日督促',
-    channelDescription: '每天早上推送项目进度提醒',
-    importance: Importance.high,
-    priority: Priority.high,
-  );
-  const NotificationDetails details =
-      NotificationDetails(android: androidDetails);
-
-  // 使用 periodic 模拟每日提醒（实际生产环境用 workmanager）
-  await flutterLocalNotificationsPlugin.periodicallyShow(
-    0,
-    '☀️ NewCo项目 · 每日进度检查',
-    '新的一天开始了，今天要推进什么？打开App查看任务清单。',
-    RepeatInterval.daily,
-    details,
-    androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-  );
 }
 
 class HermesApp extends StatelessWidget {
