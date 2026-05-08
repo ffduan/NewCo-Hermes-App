@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<title>NewCo项目助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif}
+body{background:#f0f2f5;color:#1a1a2e;min-height:100vh;padding-bottom:80px}
+/* 顶部栏 */
+.header{background:#1a1a2e;color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header h1{font-size:18px;font-weight:600}
+.header .sub{font-size:12px;color:#8899cc;margin-top:2px}
+/* 卡片区 */
+.section{padding:12px 16px 0}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+/* 阶段进度 */
+.phase-tag{background:#2568bb;color:#fff;font-size:11px;padding:3px 10px;border-radius:10px}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.progress-pct{font-size:22px;font-weight:700;color:#1a1a2e}
+.progress-bar{width:100%;height:10px;background:#e8e8e8;border-radius:6px;overflow:hidden}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,#2568bb,#4a90d9);border-radius:6px;transition:width .5s}
+.stats{display:flex;justify-content:space-around;margin-top:14px}
+.stat-item{text-align:center}
+.stat-num{font-size:20px;font-weight:700}
+.stat-label{font-size:11px;color:#999;margin-top:2px}
+.color-done{color:#2e7d32}
+.color-going{color:#1565c0}
+.color-pending{color:#9e9e9e}
+/* 任务列表 */
+.task-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.task-item:last-child{border-bottom:none}
+.task-check{width:22px;height:22px;border-radius:50%;border:2px solid #ddd;margin-right:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:.2s}
+.task-check.done{border-color:#2e7d32;background:#2e7d32;color:#fff}
+.task-check.going{border-color:#1565c0;background:#1565c0;color:#fff}
+.task-text{flex:1;font-size:14px;color:#333}
+.task-text.done{text-decoration:line-through;color:#999}
+.task-status{font-size:11px;color:#999}
+/* 汇报页 */
+.chat-box{background:#fff;border-radius:12px;padding:0;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06);max-height:400px;overflow-y:auto}
+.msg{padding:12px 16px;border-bottom:1px solid #f5f5f5}
+.msg:last-child{border-bottom:none}
+.msg-user{text-align:right}
+.msg-user .bubble{display:inline-block;background:#2568bb;color:#fff;padding:10px 14px;border-radius:14px 14px 4px 14px;text-align:left;max-width:80%;font-size:14px;line-height:1.5}
+.msg-hermes .bubble{display:inline-block;background:#fff;color:#333;padding:10px 14px;border-radius:14px 14px 14px 4px;text-align:left;max-width:90%;font-size:14px;line-height:1.6;border:1px solid #eee}
+.msg-hermes .bubble strong{color:#1a1a2e}
+.msg-time{font-size:10px;color:#bbb;margin-top:4px}
+.msg-user .msg-time{text-align:right}
+.input-area{display:flex;gap:8px;padding:12px 0}
+.input-area input{flex:1;border:1px solid #ddd;border-radius:20px;padding:10px 16px;font-size:14px;outline:none;background:#f5f5f5}
+.input-area input:focus{border-color:#2568bb}
+.input-area button{background:#1a1a2e;color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:16px;cursor:pointer;flex-shrink:0}
+.input-area button:disabled{background:#ccc}
+.quick-chips{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.quick-chip{background:#e8eef9;color:#2568bb;border:none;border-radius:14px;padding:5px 12px;font-size:12px;cursor:pointer;white-space:nowrap}
+.quick-chip:active{background:#d0ddf0}
+/* 历史页 */
+.history-item{display:flex;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.history-item:last-child{border-bottom:none}
+.history-date{width:50px;text-align:center;flex-shrink:0;margin-right:12px}
+.history-date .day{font-size:18px;font-weight:700;color:#1a1a2e}
+.history-date .mon{font-size:10px;color:#999}
+.history-content{flex:1}
+.history-text{font-size:14px;color:#333;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.history-meta{font-size:11px;color:#999;margin-top:3px}
+.history-badge{background:#2568bb20;color:#2568bb;font-size:10px;padding:1px 6px;border-radius:6px}
+.history-arrow{color:#ccc;font-size:18px;margin-left:8px}
+/* 底部导航 */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid #eee;z-index:200;padding-bottom:env(safe-area-inset-bottom)}
+.nav-item{flex:1;text-align:center;padding:8px 0 6px;cursor:pointer;color:#999;transition:.2s}
+.nav-item.active{color:#1a1a2e}
+.nav-item .icon{font-size:22px}
+.nav-item .label{font-size:11px;margin-top:1px}
+/* 弹窗 */
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:300;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal-content{background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:500px;padding:20px;animation:slideUp .25s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-item{padding:14px 0;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f0f0f0;cursor:pointer}
+.modal-item:last-child{border-bottom:none}
+.modal-item .mi-icon{width:24px;text-align:center;font-size:18px}
+/* 空状态 */
+.empty-state{text-align:center;padding:40px 20px;color:#bbb}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+/* 加载 */
+.loading{text-align:center;padding:30px;color:#999}
+.spinner{width:24px;height:24px;border:3px solid #eee;border-top-color:#2568bb;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* 通知 */
+.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>☀️ NewCo项目助手</h1>
+  <div class="sub" id="headerPhase">加载中...</div>
+</div>
+
+<div id="pageDashboard" class="page">
+  <div class="section">
+    <div class="card" id="progressCard">
+      <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="card-title">📋 本周目标</div>
+    <div class="card" style="padding:12px 16px;font-size:13px;color:#555">
+      完成BCMA CAR mRNA体外验证 + 启动CD7-LNP偶联
+    </div>
+  </div>
+  <div class="section">
+    <div class="card-title">📌 今日待办</div>
+    <div class="card" id="todayTasks" style="padding:4px 16px">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="pageReport" class="page" style="display:none">
+  <div class="section" style="padding-top:8px">
+    <div class="quick-chips">
+      <button class="quick-chip" onclick="quickSend('下一步做什么？')">🎯 下一步做什么</button>
+      <button class="quick-chip" onclick="quickSend('完成了')">✅ 完成了</button>
+      <button class="quick-chip" onclick="quickSend('卡住了')">⚠️ 卡住了</button>
+    </div>
+    <div class="chat-box" id="chatBox">
+      <div class="msg msg-hermes">
+        <div class="bubble">👋 上午好！今天想汇报什么进度？<br><br>你可以这样说：<br>• "体外验证通过了，表达率45%"<br>• "序列拿到了"<br>• "下一步做什么？"</div>
+        <div class="msg-time">刚刚</div>
+      </div>
+    </div>
+    <div class="input-area">
+      <input id="msgInput" placeholder="输入进度或问题..." onkeydown="if(event.key==='Enter')sendMsg()">
+      <button id="sendBtn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<div id="pageHistory" class="page" style="display:none">
+  <div class="section" style="padding-top:8px">
+    <div class="card" id="historyList" style="padding:4px 16px">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+</div>
+
+<div id="pageSettings" class="page" style="display:none">
+  <div class="section" style="padding-top:8px">
+    <div class="card">
+      <div class="card-title">🔗 服务器连接</div>
+      <input id="serverUrl" value="http://localhost:8765" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:8px">
+      <button onclick="saveServer()" style="width:100%;padding:10px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">保存</button>
+    </div>
+    <div class="card">
+      <div class="card-title">⏰ 提醒时间</div>
+      <input id="reminderTime" type="time" value="09:00" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px" onchange="saveReminder()">
+    </div>
+    <div class="card">
+      <div class="card-title">ℹ️ 关于</div>
+      <div style="font-size:13px;color:#666;line-height:1.6">
+        v1.0 · 基于Hermes Agent<br>
+        数据存储在后端服务器本地数据库
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="switchPage('dashboard')" id="navDashboard">
+    <div class="icon">📊</div>
+    <div class="label">看板</div>
+  </div>
+  <div class="nav-item" onclick="switchPage('report')" id="navReport">
+    <div class="icon">💬</div>
+    <div class="label">汇报</div>
+  </div>
+  <div class="nav-item" onclick="switchPage('history')" id="navHistory">
+    <div class="icon">📋</div>
+    <div class="label">历史</div>
+  </div>
+  <div class="nav-item" onclick="switchPage('settings')" id="navSettings">
+    <div class="icon">⚙️</div>
+    <div class="label">设置</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="taskModal">
+  <div class="modal-content" id="taskModalBody"></div>
+</div>
+
+<script>
+// ========== 配置 ==========
+const API = (()=>{
+  let base = localStorage.getItem('serverUrl') || 'http://localhost:8765';
+  return {
+    get url(){ return base },
+    set url(v){ base = v; localStorage.setItem('serverUrl', v) },
+    async get(path){ const r=await fetch(base+path); return r.json() },
+    async post(path,body){ const r=await fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); return r.json() }
+  };
+})();
+
+// ========== 页面切换 ==========
+function switchPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page'+name.charAt(0).toUpperCase()+name.slice(1)).style.display='block';
+  document.getElementById('nav'+name.charAt(0).toUpperCase()+name.slice(1)).classList.add('active');
+  if(name==='dashboard') loadDashboard();
+  if(name==='history') loadHistory();
+}
+
+// ========== Toast ==========
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ========== 仪表盘 ==========
+async function loadDashboard(){
+  try{
+    const d=await API.get('/api/dashboard');
+    document.getElementById('headerPhase').textContent=d.current_phase||'阶段0';
+    renderProgress(d);
+    renderTodayTasks(d.today_tasks||[]);
+  }catch(e){
+    document.getElementById('progressCard').innerHTML='<div style="text-align:center;padding:20px;color:#999">❌ 连接失败<br><span style="font-size:12px">确保后端已启动</span><br><br><button onclick="loadDashboard()" style="padding:8px 20px;border:1px solid #2568bb;border-radius:8px;background:#fff;color:#2568bb;cursor:pointer">重试</button></div>';
+  }
+}
+
+function renderProgress(d){
+  const pct=d.progress_pct||0;
+  document.getElementById('progressCard').innerHTML=`
+    <div class="progress-row">
+      <span class="phase-tag">${d.current_phase||'阶段0'}</span>
+      <span class="progress-pct">${pct}%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <div class="stats">
+      <div class="stat-item"><div class="stat-num" style="color:#333">${d.stats?.total||0}</div><div class="stat-label">总计</div></div>
+      <div class="stat-item"><div class="stat-num color-done">${d.stats?.completed||0}</div><div class="stat-label">已完成</div></div>
+      <div class="stat-item"><div class="stat-num color-going">${d.stats?.in_progress||0}</div><div class="stat-label">进行中</div></div>
+      <div class="stat-item"><div class="stat-num color-pending">${d.stats?.pending||0}</div><div class="stat-label">待办</div></div>
+    </div>
+  `;
+}
+
+function renderTodayTasks(tasks){
+  if(!tasks.length){
+    document.getElementById('todayTasks').innerHTML='<div style="text-align:center;padding:16px;color:#ccc">暂无待办任务</div>';
+    return;
+  }
+  document.getElementById('todayTasks').innerHTML=tasks.map(t=>{
+    const statusCls = t.status==='completed'?'done':(t.status==='in_progress'?'going':'');
+    const statusLabel = t.status==='completed'?'✅已完成':(t.status==='in_progress'?'🔄进行中':'⏳待办');
+    return `<div class="task-item" onclick="showTaskModal('${t.id}','${t.status}')">
+      <div class="task-check ${statusCls}">${t.status==='completed'?'✓':''}</div>
+      <div><div class="task-text ${t.status==='completed'?'done':''}">${t.content}</div><div class="task-status">${statusLabel}</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ========== 任务操作弹窗 ==========
+async function showTaskModal(id,status){
+  const body=document.getElementById('taskModalBody');
+  body.innerHTML=`
+    <div style="font-size:16px;font-weight:600;margin-bottom:12px">任务操作</div>
+    ${status!=='completed'?`<div class="modal-item" onclick="updateTask('${id}','completed')"><span class="mi-icon">✅</span>标记为已完成</div>`:''}
+    ${status!=='in_progress'?`<div class="modal-item" onclick="updateTask('${id}','in_progress')"><span class="mi-icon">🔄</span>标记为进行中</div>`:''}
+    ${status!=='pending'?`<div class="modal-item" onclick="updateTask('${id}','pending')"><span class="mi-icon">↩️</span>重置为待办</div>`:''}
+    <div class="modal-item" onclick="closeTaskModal()"><span class="mi-icon">✖️</span>取消</div>
+  `;
+  document.getElementById('taskModal').classList.add('show');
+}
+
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('show')}
+
+async function updateTask(id,status){
+  try{
+    await API.post('/api/tasks/update',{id,status});
+    closeTaskModal();
+    showToast('✅ 已更新');
+    loadDashboard();
+  }catch(e){showToast('❌ 更新失败')}
+}
+
+// ========== 汇报页 ==========
+async function sendMsg(){
+  const input=document.getElementById('msgInput');
+  const text=input.value.trim();
+  if(!text)return;
+  input.value='';
+  const btn=document.getElementById('sendBtn');
+  btn.disabled=true;
+  
+  addMsg('user',text);
+  
+  try{
+    const resp=await API.post('/api/progress/report',{text});
+    let reply=`✅ ${resp.summary||'已收到'}\n\n`;
+    if(resp.advice) reply+=`🧭 下一步建议：\n${resp.advice}\n\n`;
+    if(resp.risk) reply+=`⚠️ ${resp.risk}`;
+    addMsg('hermes',reply);
+    // 切换到看板更新数据（静默）
+    loadDashboard();
+  }catch(e){
+    addMsg('hermes','❌ 连接失败，请确认后端已启动');
+  }
+  btn.disabled=false;
+}
+
+function quickSend(text){
+  document.getElementById('msgInput').value=text;
+  sendMsg();
+}
+
+function addMsg(role,text){
+  const box=document.getElementById('chatBox');
+  const div=document.createElement('div');
+  div.className=`msg msg-${role}`;
+  const t=new Date();
+  const timeStr=`${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`;
+  div.innerHTML=`<div class="bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${timeStr}</div>`;
+  box.appendChild(div);
+  box.scrollTop=box.scrollHeight;
+}
+
+// ========== 历史页 ==========
+async function loadHistory(){
+  try{
+    const d=await API.get('/api/history');
+    const entries=d.entries||[];
+    if(!entries.length){
+      document.getElementById('historyList').innerHTML='<div class="empty-state"><div class="icon">📋</div>还没有进度记录</div>';
+      return;
+    }
+    document.getElementById('historyList').innerHTML=entries.map(e=>{
+      const dt=e.created_at?new Date(e.created_at):new Date();
+      const day=dt.getDate(); const mon=dt.getMonth()+1;
+      const dateLabel = (()=>{
+        const now=new Date();const diff=Math.floor((now-dt)/86400000);
+        if(diff===0)return '今天';if(diff===1)return '昨天';return '';
+      })();
+      return `<div class="history-item" onclick="showHistoryDetail('${e.user_text?.replace(/'/g,"\\'")}','${(e.hermes_response||'').replace(/'/g,"\\'")}')">
+        <div class="history-date"><div class="day">${day}</div><div class="mon">${mon}月</div></div>
+        <div class="history-content">
+          <div class="history-text">${e.user_text||''}</div>
+          <div class="history-meta">${mon}/${day} ${dt.getHours()}:${dt.getMinutes().toString().padStart(2,'0')} ${dateLabel?`<span class="history-badge">${dateLabel}</span>`:''}</div>
+        </div>
+        <div class="history-arrow">›</div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    document.getElementById('historyList').innerHTML='<div class="empty-state"><div class="icon">❌</div>加载失败</div>';
+  }
+}
+
+function showHistoryDetail(text,resp){
+  const body=document.getElementById('taskModalBody');
+  body.innerHTML=`
+    <div style="font-size:16px;font-weight:600;margin-bottom:12px">进度详情</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;color:#999;margin-bottom:4px">你的汇报：</div>
+      <div style="font-size:14px;padding:10px;background:#f5f5f5;border-radius:8px">${text}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:#999;margin-bottom:4px">Hermes回复：</div>
+      <div style="font-size:14px;padding:10px;background:#e8f0fe;border-radius:8px;line-height:1.5">${resp}</div>
+    </div>
+    <div class="modal-item" onclick="closeTaskModal()"><span class="mi-icon">✖️</span>关闭</div>
+  `;
+  document.getElementById('taskModal').classList.add('show');
+}
+
+// ========== 设置页 ==========
+function saveServer(){
+  const url=document.getElementById('serverUrl').value.trim();
+  if(url) API.url=url;
+  showToast('✅ 已保存服务器地址');
+}
+function saveReminder(){
+  showToast('✅ 提醒时间已保存');
+}
+// 加载设置值
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('serverUrl').value=localStorage.getItem('serverUrl')||'http://localhost:8765';
+});
+
+// ========== 每日推送（使用Notification API） ==========
+async function requestNotificationPermission(){
+  if(!('Notification'in window))return;
+  if(Notification.permission==='default'){
+    const result=await Notification.requestPermission();
+    if(result==='granted')scheduleNotification();
+  }else if(Notification.permission==='granted'){
+    scheduleNotification();
+  }
+}
+
+function scheduleNotification(){
+  const savedTime=localStorage.getItem('reminderTime')||'09:00';
+  const [h,m]=savedTime.split(':').map(Number);
+  const now=new Date();
+  const target=new Date();
+  target.setHours(h,m,0,0);
+  if(target<=now) target.setDate(target.getDate()+1);
+  const delay=target.getTime()-now.getTime();
+  setTimeout(()=>{
+    new Notification('☀️ NewCo项目 · 每日进度检查',{
+      body:'新的一天开始了，今天要推进什么？打开App查看任务清单。',
+      icon:'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%231a1a2e"/><text x="50" y="55" text-anchor="middle" fill="white" font-size="30">N</text></svg>'
+    });
+    scheduleNotification(); // 重新调度明天的
+  },delay);
+}
+
+// ========== 启动 ==========
+document.addEventListener('DOMContentLoaded',()=>{
+  loadDashboard();
+  requestNotificationPermission();
+});
+</script>
+</body>
+</html>
