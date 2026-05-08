@@ -32,7 +32,7 @@ class AppTheme {
         backgroundColor: Colors.white,
         elevation: 8,
       ),
-      fontFamily: 'NotoSansSC',
+      // fontFamily is omitted - system fonts handle CJK natively
     );
   }
 
