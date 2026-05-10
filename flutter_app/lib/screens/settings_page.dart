@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
+import '../services/api_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -10,17 +11,40 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   TextEditingController _serverController = TextEditingController();
+  ApiService? _api;
 
   @override
   void initState() {
     super.initState();
-    _serverController = TextEditingController(text: 'http://10.0.2.2:8765');
+    // 尝试从父级获取ApiService，或者用默认值
+    _serverController = TextEditingController(text: 'http://localhost:8765');
+    // 延迟一帧尝试拿到父级路由的api
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tryFindApi();
+    });
+  }
+
+  void _tryFindApi() {
+    try {
+      // 通过MainScreen传递的api - 暂时用默认值
+    } catch (_) {}
   }
 
   @override
   void dispose() {
     _serverController.dispose();
     super.dispose();
+  }
+
+  void _saveAndApply() {
+    final url = _serverController.text.trim();
+    if (url.isEmpty) {
+      _showSnack('请输入服务器地址');
+      return;
+    }
+    // 保存到共享内存（通过静态变量）
+    ApiService.defaultBaseUrl = url;
+    _showSnack('✅ 服务器地址已保存: $url');
   }
 
   void _showSnack(String msg) {
@@ -68,13 +92,19 @@ class _SettingsPageState extends State<SettingsPage> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => _showSnack('服务器地址已保存（演示版）'),
+                      onPressed: _saveAndApply,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('保存'),
+                      child: const Text('保存并应用'),
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '修改后请回到看板页下拉刷新',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
@@ -97,14 +127,18 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 12),
                   const ListTile(
                     title: Text('NewCo项目助手', style: TextStyle(fontSize: 14)),
-                    subtitle: Text('v1.0.0 · Powered by Hermes Agent',
+                    subtitle: Text('v1.0.1 · 服务器地址可保存',
                         style: TextStyle(fontSize: 12)),
                     contentPadding: EdgeInsets.zero,
                   ),
                   const ListTile(
-                    title: Text('数据存储', style: TextStyle(fontSize: 14)),
-                    subtitle: Text('数据存储在后端服务器',
-                        style: TextStyle(fontSize: 12)),
+                    title: Text('使用说明', style: TextStyle(fontSize: 14)),
+                    subtitle: Text(
+                      '1. 设置页输入服务器地址 → 保存\n'
+                      '2. 回到看板页下拉刷新\n'
+                      '3. 在「汇报」页输入进度',
+                      style: TextStyle(fontSize: 12),
+                    ),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ],

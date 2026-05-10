@@ -2,13 +2,20 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // 默认本地地址 — 安卓模拟器用 10.0.2.2 映射宿主机 localhost
-  // iOS 模拟器直接用 localhost
-  // 真机部署时改为你的服务器IP
-  String _baseUrl = 'http://10.0.2.2:8765';
+  // 默认值：手机真机上Termux后端用localhost
+  static String defaultBaseUrl = 'http://localhost:8765';
+
+  String _baseUrl = '';
+
+  ApiService() {
+    _baseUrl = defaultBaseUrl;
+  }
 
   String get baseUrl => _baseUrl;
-  set baseUrl(String url) => _baseUrl = url;
+  set baseUrl(String url) {
+    _baseUrl = url;
+    defaultBaseUrl = url; // 同步到静态变量
+  }
 
   Future<Map<String, dynamic>> get(String path) async {
     final resp = await http.get(Uri.parse('$_baseUrl$path'));
