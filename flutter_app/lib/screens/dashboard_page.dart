@@ -66,6 +66,10 @@ class _DashboardPageState extends State<DashboardPage> {
               const SizedBox(height: 16),
               Text(_error!, textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.grey, fontSize: 14)),
+              const SizedBox(height: 8),
+              Text('尝试连接: ${widget.api.baseUrl}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.grey, fontSize: 11)),
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _load,
