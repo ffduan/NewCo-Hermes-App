@@ -23,6 +23,12 @@ jobs:
           cd flutter_app
           flutter create --project-name hermes_project_app --platforms android .
 
+      - name: Allow HTTP (Android cleartext)
+        run: |
+          cd flutter_app
+          # 在AndroidManifest.xml里添加 android:usesCleartextTraffic="true"
+          sed -i 's|<application|<application android:usesCleartextTraffic="true"|' android/app/src/main/AndroidManifest.xml
+
       - name: Install dependencies
         run: |
           cd flutter_app
