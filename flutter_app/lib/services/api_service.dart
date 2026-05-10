@@ -2,32 +2,38 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // 默认值：手机真机上Termux后端用localhost
-  static String defaultBaseUrl = 'http://localhost:8765';
+  // 单例
+  static final ApiService _instance = ApiService._internal();
+  factory ApiService() => _instance;
 
-  String _baseUrl = '';
+  String _baseUrl = 'http://127.0.0.1:8765';
 
-  ApiService() {
-    _baseUrl = defaultBaseUrl;
-  }
+  ApiService._internal();
 
   String get baseUrl => _baseUrl;
   set baseUrl(String url) {
     _baseUrl = url;
-    defaultBaseUrl = url; // 同步到静态变量
   }
 
   Future<Map<String, dynamic>> get(String path) async {
-    final resp = await http.get(Uri.parse('$_baseUrl$path'));
+    final url = '$_baseUrl$path';
+    final resp = await http.get(Uri.parse(url));
+    if (resp.statusCode != 200) {
+      throw Exception('HTTP ${resp.statusCode}: ${resp.reasonPhrase}');
+    }
     return json.decode(utf8.decode(resp.bodyBytes));
   }
 
   Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body) async {
+    final url = '$_baseUrl$path';
     final resp = await http.post(
-      Uri.parse('$_baseUrl$path'),
+      Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );
+    if (resp.statusCode != 200) {
+      throw Exception('HTTP ${resp.statusCode}: ${resp.reasonPhrase}');
+    }
     return json.decode(utf8.decode(resp.bodyBytes));
   }
 

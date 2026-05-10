@@ -10,24 +10,12 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  TextEditingController _serverController = TextEditingController();
-  ApiService? _api;
+  final TextEditingController _serverController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // 尝试从父级获取ApiService，或者用默认值
-    _serverController = TextEditingController(text: 'http://localhost:8765');
-    // 延迟一帧尝试拿到父级路由的api
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _tryFindApi();
-    });
-  }
-
-  void _tryFindApi() {
-    try {
-      // 通过MainScreen传递的api - 暂时用默认值
-    } catch (_) {}
+    _serverController.text = ApiService().baseUrl;
   }
 
   @override
@@ -42,21 +30,25 @@ class _SettingsPageState extends State<SettingsPage> {
       _showSnack('请输入服务器地址');
       return;
     }
-    // 保存到共享内存（通过静态变量）
-    ApiService.defaultBaseUrl = url;
-    _showSnack('✅ 服务器地址已保存: $url');
+    // 直接修改单例的baseUrl
+    ApiService().baseUrl = url;
+    _showSnack('✅ 已保存: $url\n回到看板下拉刷新');
   }
 
   void _showSnack(String msg) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg)),
+        SnackBar(
+          content: Text(msg, style: const TextStyle(fontSize: 13)),
+          duration: const Duration(seconds: 3),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentUrl = ApiService().baseUrl;
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
       body: ListView(
@@ -80,7 +72,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     controller: _serverController,
                     decoration: InputDecoration(
                       labelText: '服务器地址',
-                      hintText: 'http://your-server:8765',
+                      hintText: 'http://127.0.0.1:8765',
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8)),
                       contentPadding: const EdgeInsets.symmetric(
@@ -100,11 +92,23 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: const Text('保存并应用'),
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '修改后请回到看板页下拉刷新',
-                    style: TextStyle(fontSize: 11, color: Colors.grey[400]),
-                    textAlign: TextAlign.center,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('当前连接: $currentUrl',
+                            style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                        const SizedBox(height: 4),
+                        Text('修改后回到看板页下拉刷新即可生效',
+                            style: TextStyle(fontSize: 11, color: Colors.grey[400])),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -127,13 +131,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 12),
                   const ListTile(
                     title: Text('NewCo项目助手', style: TextStyle(fontSize: 14)),
-                    subtitle: Text('v1.0.1 · 服务器地址可保存',
+                    subtitle: Text('v1.0.2 · 修复服务器地址保存',
                         style: TextStyle(fontSize: 12)),
                     contentPadding: EdgeInsets.zero,
                   ),
-                  const ListTile(
-                    title: Text('使用说明', style: TextStyle(fontSize: 14)),
-                    subtitle: Text(
+                  ListTile(
+                    title: const Text('使用说明', style: TextStyle(fontSize: 14)),
+                    subtitle: const Text(
                       '1. 设置页输入服务器地址 → 保存\n'
                       '2. 回到看板页下拉刷新\n'
                       '3. 在「汇报」页输入进度',
